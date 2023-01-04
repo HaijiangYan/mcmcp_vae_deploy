@@ -44,7 +44,7 @@ def cat():
     loc = json.loads(loc)
     prediction = model.decoder(loc['data'])
     category = prediction[1].numpy()
-    return repr(json.dumps({'cat': np.argmax(category), 'value': np.max(category)}))
+    return repr(json.dumps({'cat': int(np.argmax(category)), 'value': float(np.max(category))}))
 
 
 # flask run --host=0.0.0.0 --port=80
