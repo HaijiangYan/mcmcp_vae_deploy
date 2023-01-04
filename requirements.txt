@@ -1,0 +1,8 @@
+tensorflow-cpu
+tensorflow-estimator
+tensorflow_io
+flask
+flask_cors
+numpy
+opencv-python-headless
+pybase64
