@@ -47,9 +47,9 @@ def cat(emotion_id):  # emotion_id is in range 0-7
     cate = np.argmax(category, axis=1)
     value = np.max(category, axis=1)
     likely = np.asarray(category[:, emotion_id], dtype='float64')
-    return repr(json.dumps({'cat': cate.astype('int32').tolist(),
-                            'value': value.astype('float64').tolist(),
-                            'likelyhood': likely.tolist()}))
+    return json.dumps({'cat': cate.astype('int32').tolist(),
+                        'value': value.astype('float64').tolist(),
+                        'likelyhood': likely.tolist()})
 
 
 # flask run --host=0.0.0.0 --port=80
