@@ -38,13 +38,15 @@ def img():
     # return render_template('test.html')
 
 
-@app.route("/category", methods=['GET', 'POST'])
-def cat():
+@app.route("/category/<int:emotion_id>", methods=['GET', 'POST'])
+def cat(emotion_id):  # emotion_id is in range 0-7
     loc = request.get_data()
     loc = json.loads(loc)
     prediction = model.decoder(loc['data'])
     category = prediction[1].numpy()
-    return repr(json.dumps({'cat': int(np.argmax(category, axis=1)), 'value': float(np.max(category, axis=1))}))
+    return repr(json.dumps({'cat': int(np.argmax(category, axis=1)),
+                            'value': float(np.max(category, axis=1)),
+                            'likelyhood': float(category[:, emotion_id])}))
 
 
 # flask run --host=0.0.0.0 --port=80
