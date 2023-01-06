@@ -44,9 +44,12 @@ def cat(emotion_id):  # emotion_id is in range 0-7
     loc = json.loads(loc)
     prediction = model.decoder(loc['data'])
     category = prediction[1].numpy()
-    return repr(json.dumps({'cat': int(np.argmax(category, axis=1)),
-                            'value': float(np.max(category, axis=1)),
-                            'likelyhood': float(category[:, emotion_id])}))
+    cate = np.argmax(category, axis=1)
+    value = np.max(category, axis=1)
+    likely = np.asarray(category[:, emotion_id], dtype='float64')
+    return repr(json.dumps({'cat': cate.astype('int32'),
+                            'value': value.astype('float64'),
+                            'likelyhood': likely}))
 
 
 # flask run --host=0.0.0.0 --port=80
