@@ -14,7 +14,7 @@ import base64
 
 app = Flask(__name__)
 CORS(app)
-model = saved_model.load('./model')
+model = saved_model.load('./ModelSaved')
 
 
 def numpy_to_base64(image_np):
