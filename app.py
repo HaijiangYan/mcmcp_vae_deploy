@@ -11,6 +11,7 @@ import os
 import json
 import cv2
 import base64
+import emo_distribution
 
 app = Flask(__name__)
 CORS(app)
@@ -38,25 +39,16 @@ def img():
     # return render_template('test.html')
 
 
-@app.route("/category/<int:emotion_id>", methods=['GET', 'POST'])
-def cat(emotion_id):  # emotion_id is in range 0-7
+@app.route("/fx/<int:emotion_id>", methods=['GET', 'POST'])
+def fx(emotion_id):  # emotion_id is in range 0-6
     loc = request.get_data()
     loc = json.loads(loc)
-    prediction = model.decoder(loc['data'])
-    category = prediction[1].numpy()
-    cate = np.argmax(category, axis=1)
-    value = np.max(category, axis=1)
-    likely = np.asarray(category[:, emotion_id], dtype='float64')
-    return json.dumps({'cat': cate.astype('int32').tolist(),
-                        'value': value.astype('float64').tolist(),
-                        'likelyhood': likely.tolist()})
+    mix_p = emo_distribution.get_distribution(loc['data'], emotion_id)
+    return json.dumps({'density': mix_p.tolist()})
 
 
 # flask run --host=0.0.0.0 --port=80
-# docker build -t cvae_mcmcp .
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=os.getenv("PORT", 5000))
-# docker buildx build --load --platform linux/amd64 -t registry.heroku.com/mcmcp/web .
-# docker push registry.heroku.com/mcmcp/web:latest  
-# heroku container:release web -a mcmcp 
+
 
