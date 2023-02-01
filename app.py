@@ -30,12 +30,12 @@ def img():
     loc = request.get_data()
     loc = json.loads(loc)
     prediction = model.decoder(loc['data'])
-    img_array = prediction[0].numpy()[0, :, :, :].squeeze() * 255
-    img_base4 = numpy_to_base64(img_array)
-    # im = Image.fromarray(img_array)
-    # im = im.convert('L')
-    # im.save('sample.png')
-    return 'data:image/png;base64,' + str(img_base4)
+    img_array_l = prediction[0].numpy()[0, :, :, :].squeeze() * 255
+    img_base4_l = numpy_to_base64(img_array_l)
+    img_array_r = prediction[0].numpy()[1, :, :, :].squeeze() * 255
+    img_base4_r = numpy_to_base64(img_array_r)
+    return {'left': 'data:image/png;base64,' + str(img_base4_l),
+            'right': 'data:image/png;base64,' + str(img_base4_r)}
     # return render_template('test.html')
 
 
@@ -44,7 +44,7 @@ def fx(emotion_id):  # emotion_id is in range 0-6
     loc = request.get_data()
     loc = json.loads(loc)
     mix_p = emo_distribution.get_distribution(loc['data'], emotion_id)
-    return json.dumps({'density': mix_p.tolist()})
+    return {'density': mix_p.tolist()}
 
 
 # flask run --host=0.0.0.0 --port=80
