@@ -11,14 +11,15 @@ import os
 import json
 import cv2
 import base64
-import emo_distribution
+from emo_distribution import AffectiveFace
 
 app = Flask(__name__)
 CORS(app)
 model = saved_model.load('./ModelSaved')
+prior = AffectiveFace()
 
 
-def numpy_to_base64(image_np):
+def _numpy_to_base64(image_np):
     data = cv2.imencode('.jpg', image_np)[1]
     image_bytes = data.tobytes()
     image_base4 = base64.b64encode(image_bytes).decode('utf8')
@@ -29,11 +30,11 @@ def numpy_to_base64(image_np):
 def img():
     loc = request.get_data()
     loc = json.loads(loc)
-    prediction = model.decoder(loc['data'])
+    prediction = model(loc['data'])
     img_array_l = prediction[0].numpy()[0, :, :, :].squeeze() * 255
-    img_base4_l = numpy_to_base64(img_array_l)
+    img_base4_l = _numpy_to_base64(img_array_l)
     img_array_r = prediction[0].numpy()[1, :, :, :].squeeze() * 255
-    img_base4_r = numpy_to_base64(img_array_r)
+    img_base4_r = _numpy_to_base64(img_array_r)
     return {'left': 'data:image/png;base64,' + str(img_base4_l),
             'right': 'data:image/png;base64,' + str(img_base4_r)}
     # return render_template('test.html')
@@ -43,7 +44,7 @@ def img():
 def fx(emotion_id):  # emotion_id is in range 0-6
     loc = request.get_data()
     loc = json.loads(loc)
-    mix_p = emo_distribution.get_distribution(loc['data'], emotion_id)
+    mix_p = prior.get_density(loc['data'], emotion_id)
     return {'density': mix_p.tolist()}
 
 

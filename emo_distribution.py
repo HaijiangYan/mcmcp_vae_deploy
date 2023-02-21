@@ -1,37 +1,56 @@
 #!/Yan/miniforge3/envs/
 # -*- coding:utf-8 -*-
-
-from numpy import random, shape, array
+from numpy import random, array, argwhere, mean, sum, zeros, square, sqrt
 from scipy import stats
 
 
-def read_csv2array(filepath):
-    """read label.csv and return a list"""
+class AffectiveFace:
+    """calculate the distribution of vae's prior knowledge of the specific emotion"""
 
-    file = open(filepath, 'r', encoding="utf-8")
-    context = file.read()  # as str
-    list_result = context.split("\n")[1:-1]
-    length = len(list_result)
-    points = random.normal(0, 1, [length, 4])
-    for i in range(length):
-        for j in range(4):
-            points[i, j] = float(list_result[i].split(",")[j+1])
-    file.close()  # file must be closed after manipulating
-    return points
+    @staticmethod
+    def _read_csv2array(filepath):
+        """read label.csv and return a list"""
 
+        file = open(filepath, 'r', encoding="utf-8")
+        context = file.read()  # as str
+        list_result = context.split("\n")[1:-1]
+        length = len(list_result)
+        points = random.normal(0, 1, [length, 4])
+        for i in range(length):
+            for j in range(4):
+                points[i, j] = float(list_result[i].split(",")[j+1])
+        file.close()  # file must be closed after manipulating
+        return points
 
-def get_distribution(points, cat):
-    latent_points = read_csv2array('./latent_point.csv')
-    mix_dense = array([0, 0], dtype='float64')
-    count = 0
-    for i in range(shape(latent_points)[0]):
-        if latent_points[i, 3] == cat:
-            gaus_dist = stats.multivariate_normal(mean=[latent_points[i, 0], latent_points[i, 1], latent_points[i, 2]],
+    def __init__(self):
+        self.latent_points = self._read_csv2array('./latent_point.csv')
+        self.cat_center = zeros((7, 3))
+        self.weight = zeros((self.latent_points.shape[0], 1))
+        for category_id in range(7):
+            idx = argwhere(self.latent_points[:, 3] == category_id).squeeze()
+            mean_cat = mean(self.latent_points[idx, 0:3], axis=0)
+            # the center of each emotion cluster
+            self.cat_center[category_id, :] = mean_cat
+            # the distance from each point to their center
+            distance = 1./sqrt(square(self.latent_points[idx, 0]-mean_cat[0, 0])
+                               + square(self.latent_points[idx, 1]-mean_cat[0, 1])
+                               + square(self.latent_points[idx, 2]-mean_cat[0, 2]))
+            self.weight[idx, 0] = distance / sum(distance)
+
+    def get_density(self, points, category_id):
+        """weighted GMM to infer the probability density given a point"""
+
+        gmm_density = array([0, 0], dtype='float64')
+        idx = argwhere(self.latent_points[:, 3] == category_id).squeeze()
+
+        for i in range(idx.shape[0]):
+            gaus_dist = stats.multivariate_normal(mean=[self.latent_points[idx[i], 0], self.latent_points[idx[i], 1],
+                                                        self.latent_points[idx[i], 2]],
                                                   cov=[[1, 0, 0], [0, 1, 0], [0, 0, 1]])
             gaus_dense = gaus_dist.pdf(points)
-            mix_dense += gaus_dense
-            count += 1
-    return mix_dense / count
+            gmm_density += gaus_dense * self.weight[idx[i], 0]
+
+        return gmm_density
 
 
 
