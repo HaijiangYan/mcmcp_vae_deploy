@@ -32,9 +32,9 @@ class AffectiveFace:
             # the center of each emotion cluster
             self.cat_center[category_id, :] = mean_cat
             # the distance from each point to their center
-            distance = 1./sqrt(square(self.latent_points[idx, 0]-mean_cat[0, 0])
-                               + square(self.latent_points[idx, 1]-mean_cat[0, 1])
-                               + square(self.latent_points[idx, 2]-mean_cat[0, 2]))
+            distance = 1./sqrt(square(self.latent_points[idx, 0]-mean_cat[0])
+                               + square(self.latent_points[idx, 1]-mean_cat[1])
+                               + square(self.latent_points[idx, 2]-mean_cat[2]))
             self.weight[idx, 0] = distance / sum(distance)
 
     def get_density(self, points, category_id):
