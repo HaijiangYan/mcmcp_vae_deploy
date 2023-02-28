@@ -66,14 +66,17 @@ def gmm_density(locs, emotion_id):
 
 @app.route("/", methods=['GET', 'POST'])
 def img():
-    loc = request.get_data()
-    loc = json.loads(loc)
+
+    loc = json.loads(request.get_data())
     prediction = model(loc['data'])
     img_array_l = prediction[0].numpy()[0, :, :, :].squeeze() * 255
     img_base4_l = _numpy_to_base64(img_array_l)
     img_array_r = prediction[0].numpy()[1, :, :, :].squeeze() * 255
     img_base4_r = _numpy_to_base64(img_array_r)
+
+    del loc, prediction, img_array_l, img_array_r
     gc.collect()
+
     return {'left': 'data:image/png;base64,' + str(img_base4_l),
             'right': 'data:image/png;base64,' + str(img_base4_r)}
     # return render_template('test.html')
@@ -81,11 +84,10 @@ def img():
 
 @app.route("/fx/<int:emotion_id>", methods=['GET', 'POST'])
 def fx(emotion_id):  # emotion_id is in range 0-6
-    loc = request.get_data()
-    loc = json.loads(loc)
+
+    loc = json.loads(request.get_data())
     # mix_p = prior.get_density(loc['data'], emotion_id)
     model_density = gmm_density(loc['data'], emotion_id)
-    gc.collect()
 
     return {'density': model_density.tolist()}
 
