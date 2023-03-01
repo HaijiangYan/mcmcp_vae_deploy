@@ -8,4 +8,4 @@ COPY . /flask/
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 #CMD ["python","app.py"]
-CMD ["gunicorn", "-c", "config.py", "app:app"]
+CMD /start.sh

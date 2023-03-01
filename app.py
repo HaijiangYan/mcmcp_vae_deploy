@@ -77,6 +77,6 @@ def fx(emotion_id):  # emotion_id is in range 0-6
 # flask run --host=0.0.0.0 --port=80
 # curl -d '{"data": [[1,1,1], [0, 0, 0]]}' -X POST http://127.0.0.1:5000/fx/2
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=os.getenv("PORT", 5000))
 # host='0.0.0.0', port=os.getenv("PORT", 5000)
 

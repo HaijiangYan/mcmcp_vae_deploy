@@ -2,9 +2,9 @@
 # -*- coding:utf-8 -*-
 
 
-bind = "0.0.0.0:5000"
-workers = 3
-threads = 3
+# bind = "0.0.0.0:5000"
+workers = 2
+threads = 2
 max_requests = 500
 max_requests_jitter = 200
 
