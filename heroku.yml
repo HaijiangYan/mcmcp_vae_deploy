@@ -3,4 +3,4 @@ build:
     web: Dockerfile
 run:
   web: gunicorn gettingstarted.wsgi
-  web: gunicorn app:app --max-requests 200 --max-requests-jitter 100 --preload
+  web: gunicorn app:app -w 2 --max-requests 250 --max-requests-jitter 100
