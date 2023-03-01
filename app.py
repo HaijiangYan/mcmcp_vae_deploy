@@ -19,30 +19,20 @@ app = Flask(__name__)
 CORS(app)
 model = saved_model.load('./ModelSaved')
 # prior = AffectiveFace()
-gmm_h1 = stats.multivariate_normal(mean=[1.38445539, -0.86085914, -0.12753441],
-                                   cov=[[0.14541639, 0.01199723, -0.01853188],
-                                        [0.01199723, 0.04749794, -0.01231523],
-                                        [-0.01853188, -0.01231523, 0.0352132]])
+gmm_h = stats.multivariate_normal(mean=[1.574, -0.990, -0.130],
+                                  cov=[[0.968, 0.012, -0.025],
+                                       [0.012, 0.987, -0.083],
+                                       [-0.025, -0.083, 0.963]])
 
-gmm_h2 = stats.multivariate_normal(mean=[1.76839786, -1.0224419, -0.47976337],
-                                   cov=[[0.20442699, 0.20461399, -0.1039588],
-                                        [0.20461399, 0.30873015, -0.17221446],
-                                        [-0.1039588, -0.17221446, 0.21401007]])
+gmm_s1 = stats.multivariate_normal(mean=[-1.081, 0.756, 0.673],
+                                   cov=[[1.151, -0.019, -0.053],
+                                        [-0.019, 1.010, 0.054],
+                                        [-0.053, 0.054, 0.864]])
 
-gmm_h3 = stats.multivariate_normal(mean=[1.7216995, -1.21029812, 0.18016213],
-                                   cov=[[0.02889061, -0.03503325, 0.04589235],
-                                        [-0.03503325, 0.25920628, -0.06107783],
-                                        [0.04589235, -0.06107783, 0.12520434]])
-
-gmm_s1 = stats.multivariate_normal(mean=[-0.69823855, 0.53385238, 0.55744477],
-                                   cov=[[0.08809386, -0.02021937, -0.02022361],
-                                        [-0.02021937, 0.0324342, 0.00799594],
-                                        [-0.02022361, 0.00799594, 0.044204]])
-
-gmm_s2 = stats.multivariate_normal(mean=[-1.37001812, 0.98972423, 0.649176],
-                                   cov=[[0.32913519, 0.08802234, -0.07693232],
-                                        [0.08802234, 0.19912714, 0.03047114],
-                                        [-0.07693232, 0.03047114, 0.08038485]])
+gmm_s2 = stats.multivariate_normal(mean=[-0.628, 0.526, 0.485],
+                                   cov=[[0.768, -0.028, 0.006],
+                                        [-0.028, 0.764, -0.052],
+                                        [0.006, -0.052, 0.832]])
 
 
 def _numpy_to_base64(image_np):
@@ -54,12 +44,9 @@ def _numpy_to_base64(image_np):
 
 def gmm_density(locs, emotion_id):
     if emotion_id == 1:  # happy
-        density = gmm_h1.pdf(locs) * 0.47877633\
-                  + gmm_h2.pdf(locs) * 0.26221939\
-                  + gmm_h3.pdf(locs) * 0.25900429
+        density = gmm_h.pdf(locs)
     elif emotion_id == 2:
-        density = gmm_s1.pdf(locs) * 0.71121901 \
-                  + gmm_s2.pdf(locs) * 0.28878099
+        density = gmm_s1.pdf(locs) * 0.582 + gmm_s2.pdf(locs) * 0.418
 
     return density
 
