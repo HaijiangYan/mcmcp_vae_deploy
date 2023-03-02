@@ -17,9 +17,9 @@ app = Flask(__name__)
 CORS(app)
 model = saved_model.load('./ModelSaved')
 # prior = AffectiveFace()
-cov_mat = [[1, 0, 0],
-           [0, 1, 0],
-           [0, 0, 1]]
+cov_mat = [[0.8, 0, 0],
+           [0, 0.8, 0],
+           [0, 0, 0.8]]
 gmm_h = stats.multivariate_normal(mean=[1.572, -0.994, -0.140],
                                   cov=cov_mat)
 
