@@ -4,7 +4,6 @@
 
 from flask import Flask, request
 from flask_cors import CORS
-from numpy import square
 # from flask import render_template
 from tensorflow import saved_model
 import os
@@ -18,20 +17,29 @@ app = Flask(__name__)
 CORS(app)
 model = saved_model.load('./ModelSaved')
 # prior = AffectiveFace()
-gmm_h = stats.multivariate_normal(mean=[1.574, -0.990, -0.130],
-                                  cov=[[0.968, 0.012, -0.025],
-                                       [0.012, 0.987, -0.083],
-                                       [-0.025, -0.083, 0.963]])
+cov_mat = [[1, 0, 0],
+           [0, 1, 0],
+           [0, 0, 1]]
+gmm_h = stats.multivariate_normal(mean=[1.572, -0.994, -0.140],
+                                  cov=cov_mat)
 
-gmm_s1 = stats.multivariate_normal(mean=[-1.081, 0.756, 0.673],
-                                   cov=[[1.151, -0.019, -0.053],
-                                        [-0.019, 1.010, 0.054],
-                                        [-0.053, 0.054, 0.864]])
+gmm_s = stats.multivariate_normal(mean=[-0.892, 0.665, 0.584],
+                                  cov=cov_mat)
 
-gmm_s2 = stats.multivariate_normal(mean=[-0.628, 0.526, 0.485],
-                                   cov=[[0.768, -0.028, 0.006],
-                                        [-0.028, 0.764, -0.052],
-                                        [0.006, -0.052, 0.832]])
+gmm_neutral = stats.multivariate_normal(mean=[-0.511, -0.965, 1.249],
+                                        cov=cov_mat)
+
+gmm_fear = stats.multivariate_normal(mean=[-0.655, -1.201, -1.109],
+                                     cov=cov_mat)
+
+gmm_dis = stats.multivariate_normal(mean=[0.936, 1.179, -0.947],
+                                    cov=cov_mat)
+
+gmm_ang = stats.multivariate_normal(mean=[0.635, 1.242, 1.347],
+                                    cov=cov_mat)
+
+gmm_sup = stats.multivariate_normal(mean=[-1.371, 0.742, -1.326],
+                                    cov=cov_mat)
 
 
 def _numpy_to_base64(image_np):
@@ -43,16 +51,23 @@ def _numpy_to_base64(image_np):
 
 def gmm_density(locs, emotion_id):
     if emotion_id == 1:  # happy
-        density = gmm_h.pdf(locs)
+        density = gmm_h.pdf(locs) - (gmm_s.pdf(locs) + gmm_neutral.pdf(locs) + gmm_fear.pdf(locs)
+                                     + gmm_dis.pdf(locs) + gmm_ang.pdf(locs) + gmm_sup.pdf(locs)) / 6
     elif emotion_id == 2:
-        density = gmm_s1.pdf(locs) * 0.582 + gmm_s2.pdf(locs) * 0.418
+        density = gmm_s.pdf(locs) - (gmm_h.pdf(locs) + gmm_neutral.pdf(locs) + gmm_fear.pdf(locs)
+                                     + gmm_dis.pdf(locs) + gmm_ang.pdf(locs) + gmm_sup.pdf(locs)) / 6
 
-    return square(density)
+    if density[0] < 0:
+        density[0] = 0
+
+    if density[1] < 0:
+        density[1] = 0
+
+    return density
 
 
 @app.route("/", methods=['GET', 'POST'])
 def img():
-
     loc = json.loads(request.get_data())
     prediction = model(loc['data'])
     img_array_l = prediction[0].numpy()[0, :, :, :].squeeze() * 255
@@ -80,4 +95,3 @@ def fx(emotion_id):  # emotion_id is in range 0-6
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=os.getenv("PORT", 5000))
 # host='0.0.0.0', port=os.getenv("PORT", 5000)
-
