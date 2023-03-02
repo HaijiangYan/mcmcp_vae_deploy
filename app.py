@@ -4,6 +4,7 @@
 
 from flask import Flask, request
 from flask_cors import CORS
+from numpy import square
 # from flask import render_template
 from tensorflow import saved_model
 import os
@@ -46,7 +47,7 @@ def gmm_density(locs, emotion_id):
     elif emotion_id == 2:
         density = gmm_s1.pdf(locs) * 0.582 + gmm_s2.pdf(locs) * 0.418
 
-    return density
+    return square(density)
 
 
 @app.route("/", methods=['GET', 'POST'])
